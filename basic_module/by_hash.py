@@ -12,3 +12,4 @@ fmd5 = m.hexdigest()
 
 if fmd5 == 'a9030c45a2361e8565559eee400eca24':
     print('Dummy Test Virus')
+    print(len(fbuf))
