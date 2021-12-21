@@ -16,21 +16,20 @@ size:hash:name
 
 # 파일에서 Load
 def LoadVirusDB():
-    fp = open('../data/virus_db','r')
+    fp = open('../data/virus.db','rb')
     while True:
         line = fp.readline()
         if not line : break
         
         line = line.strip() 
         VirusDB.append(line)
-        print(line)
     fp.close()
 
 # 가공하여 저장    
 def MakeVirusDB():
     for pattern in VirusDB:
         t = []
-        v = pattern.split(':')
+        v = pattern.split(':'.encode('utf-8')) # : 을 binary 형태로 인코딩
         t.append(v[1])
         t.append(v[2])
         vdb.append(t)
@@ -38,7 +37,7 @@ def MakeVirusDB():
         size = int(v[0])
         if vsize.count(size) == 0:
             vsize.append(size)
-            
+    
 def SearchVDB(fmd5):
     for t in vdb:
         if t[0] == fmd5:
@@ -48,6 +47,8 @@ def SearchVDB(fmd5):
 if __name__ == '__main__' :
     LoadVirusDB()
     MakeVirusDB()
+    
+    print(vdb)
     
     if len(sys.argv) != 2:
         print("Usage : by_file [file]")
@@ -60,10 +61,9 @@ if __name__ == '__main__' :
         buf = fp.read()
         fp.close()
         
-        m = hashlib.md()
+        m = hashlib.md5()
         m.update(buf)
-        fmd5 = m.hexdigest()
-        
+        fmd5 = bytes(m.hexdigest(), 'UTF-8') # DB : byte -> hash -> 다시 byte로 읽음, 따라서 파일 hash 값에 byte 인코딩
         ret, vname = SearchVDB(fmd5)
         if ret :
             print ("%s : %s" % (fname, vname))
