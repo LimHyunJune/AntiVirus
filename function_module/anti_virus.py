@@ -3,6 +3,7 @@ import os
 import hashlib
 import scan_mod
 import cure_mod
+import imp
 
 VirusDB =[] # virus raw data
 vdb = [] # md5 해시 검색 기반 가공 악성코드 
@@ -11,7 +12,7 @@ sdb = [] # 위치 검색 기반 가공 악성코드
 
 # 파일에서 Load
 def LoadVirusDB():
-    fp = open('../data/virus.db','rb')
+    fp = open( 'virus.db','rb')
     while True:
         line = fp.readline()
         if not line : break
@@ -42,22 +43,28 @@ def MakeVirusDB():
             t.append(v[3]) # 진단 문자열 패턴
             t.append(v[4]) # 악성코드 명
             sdb.append(t)
-ㅣ
+
 if __name__ == '__main__' :
     LoadVirusDB()
     MakeVirusDB()
     
-    print(vdb)
-    
     if len(sys.argv) != 2:
         print("Usage : by_file [file]")
-        exit(0)
-        
+        sys.exit(0)
+    
     fname = sys.argv[1]
-    ret, vname = scan_mod.ScanVirus(vdb, vsize, sdb, fname)
+    try:
+        m = 'scan_mod' # 로딩할 모듈 명
+        f, filename, desc = imp.find_module(m, ['']) # 현재 폴더에서 모듈 찾음
+        module = imp.load_module(m, f, filename, desc)
+        cmd = 'ret, vname = module.ScanVirus(vdb, vsize, sdb, fname)' # 진단 함수 호출
+        exec(cmd) # 명령어 실행
+    except ImportError: 
+        ret, vname = scan_mod.ScanVirus(vdb, vsize, sdb, fname)
     
     if ret :
         print ("%s : %s" % (fname, vname))
         cure_mod.CureDelete(fname)
     else:
         print('%s : ok' % (fname))
+        
